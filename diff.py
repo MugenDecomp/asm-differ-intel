@@ -2933,8 +2933,11 @@ def process(dump: str, config: Config) -> List[Line]:
         if (
             mnemonic in arch.branch_instructions or is_text_relative_j
         ) and symbol is None:
+            # target symbols for MUGEN start with _
+            # this is hyper-specific to this use case
+            is_target_symbol = re.search(r"_[A-Za-z0-9_]+", args)
             x86_regcall = re.search(r"(?i)dword ptr .*\[.+\]", args)
-            if not x86_regcall: # ignore register calls (e.g. `call dword ptr [ebx + 0xc]`)
+            if not x86_regcall and not is_target_symbol: # ignore register calls (e.g. `call dword ptr [ebx + 0xc]`) and extern symbol targets
                 branch_target = int(args.split(",")[-1], 16)
 
         output.append(
